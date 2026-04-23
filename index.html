@@ -1,1 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Capítulo 2 - Textil Chile | Estudio completo + industria real</title>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Leaflet para mapa interactivo -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f4f8;
+            color: #1a2c3e;
+            line-height: 1.5;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0b3b4f, #1c6e8f);
+            color: white;
+            padding: 2.5rem;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            font-size: 1rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Contenido principal */
+        .content {
+            padding: 2rem;
+        }
+
+        /* Secciones */
+        .section {
+            margin-bottom: 3rem;
+        }
+        .section-title {
+            font-size: 1.6rem;
+            color: #0b3b4f;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .section-title span {
+            background: #1c6e8f;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .section-contexto {
+            background: #eef3f7;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin: 1rem 0 1.5rem 0;
+            border-left: 4px solid #1c6e8f;
+            font-size: 0.95rem;
+        }
+        .section-contexto strong {
+            color: #0b3b4f;
+        }
+
+        /* Tarjetas */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #e2edf2;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.1);
+        }
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .card h3 {
+            color: #1c6e8f;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Tablas */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1rem 0;
+            border-radius: 0.75rem;
+            border: 1px solid #e2edf2;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th {
+            background: #1c6e8f;
+            color: white;
+            padding: 12px 16px;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9f0f5;
+        }
+
+        /* Mapa */
+        #map {
+            height: 450px;
+            width: 100%;
+            border-radius: 1rem;
+            margin: 1rem 0;
+            z-index: 1;
+            border: 2px solid #1c6e8f;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Gráficos */
+        .grafico-wrapper, .grafico-barras-wrapper {
+            background: #ffffff;
+            border-radius: 1rem;
+            padding: 1.2rem;
+            margin: 1rem 0;
+            border: 1px solid #e2edf2;
+        }
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 1rem 0;
+        }
+        .slider-container {
+            background: #f0f6fa;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin: 1rem 0;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #cbdde6;
+            border-radius: 5px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1c6e8f;
+            cursor: pointer;
+        }
+        .info-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .info-card {
+            background: #f8fafc;
+            padding: 0.8rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            border-left: 3px solid #1c6e8f;
+        }
+        .info-valor {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0b3b4f;
+        }
+
+        /* Línea de tiempo */
+        .timeline {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin: 1rem 0;
+            gap: 0.5rem;
+        }
+        .timeline-item {
+            background: #eef3f7;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        .timeline-year {
+            font-weight: 700;
+            color: #1c6e8f;
+            font-size: 1rem;
+        }
+
+        /* Cadena de valor */
+        .cadena-valor {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            background: #f0f6fa;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            margin: 1rem 0;
+        }
+        .eslabon {
+            background: white;
+            padding: 0.8rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            min-width: 100px;
+            border-top: 3px solid #1c6e8f;
+        }
+
+        /* Quiz */
+        .quiz-opcion {
+            background: #f0f6fa;
+            padding: 0.6rem 1rem;
+            margin: 0.3rem 0;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .quiz-opcion:hover {
+            background: #dce8f0;
+        }
+        .correcto { background: #c8e6d9; }
+        .incorrecto { background: #f5d6d6; }
+        .quiz-feedback {
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        footer {
+            background: #0b3b4f;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 0.5rem; }
+            .content { padding: 1rem; }
+            .timeline { flex-direction: column; }
+            #map { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-badge">📘 Capítulo 2</div>
+        <h1>📌 Naturaleza y ámbito de la empresa</h1>
+        <p>Aplicación a la industria textil en Chile | Basado en Coase, Williamson y Teoría de Agencia</p>
+    </div>
+    
+    <div class="content">
+        
+        <!-- ================= SECCIÓN 1: TEORÍA PRINCIPAL ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>1</span> 
+                <h2>¿Qué dice el Capítulo 2?</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>📖 Contexto teórico:</strong> Antes de Coase (1939), la empresa era vista como una "caja negra". Coase preguntó: <strong>¿Por qué existen las empresas?</strong> Su respuesta: la empresa existe para <strong>ahorrar costos de transacción</strong>. Williamson (1985) añadió que el tamaño óptimo de la empresa (I*) se alcanza minimizando costos de transacción + costos de coordinación interna.
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-icon">🏭</div>
+                    <h3>Costos de transacción</h3>
+                    <p>Buscar proveedores, negociar precios, redactar contratos y vigilar su cumplimiento. Cuando son altos, es más eficiente integrar.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">⚖️</div>
+                    <h3>Especificidad de activos</h3>
+                    <p>Un activo vale más dentro de una relación que fuera. Ejemplo: maquinaria diseñada para un solo producto. Genera riesgo de <strong>hold-up</strong>.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">👥</div>
+                    <h3>Problema de agencia</h3>
+                    <p>Dueños (principales) vs. gerentes (agentes). Soluciones: contratos con incentivos, stock options, monitoreo.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 2: MAPA INTERACTIVO ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>2</span>
+                <h2>Mapa interactivo: concentración textil en Chile</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>🗺️ ¿Cómo usar este mapa?</strong> <strong>Haz clic en los marcadores azules</strong> para ver información detallada. Puedes arrastrar el mapa y hacer zoom.
+            </div>
+            <div id="map"></div>
+            <p style="font-size:0.8rem; margin-top:0.5rem; color:#4a6a7c;">📍 Regiones Metropolitana y Biobío concentran >80% de empresas textiles. Tarapacá (Zona Franca) es la principal puerta de importaciones.</p>
+        </div>
+        
+        <!-- ================= SECCIÓN 3: GRÁFICO DE BARRAS ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>3</span>
+                <h2>Evolución: importaciones vs. producción local</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>📊 ¿Qué muestra?</strong> Importaciones (rojo) han crecido de USD 5.200M a 7.850M (2015-2025). Producción local (verde) se ha mantenido baja (~USD 1.000M). Refleja <strong>baja integración vertical en producción</strong> y alta dependencia externa.
+            </div>
+            <div class="grafico-barras-wrapper">
+                <div class="chart-container">
+                    <canvas id="graficoBarras" width="800" height="300" style="max-width:100%; height:auto;"></canvas>
+                </div>
+                <p style="font-size:0.75rem; text-align:center;">Fuente: Cámara de Comercio de Santiago y Aduanas de Chile (estimaciones 2025).</p>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 4: LÍNEA DE TIEMPO ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>4</span>
+                <h2>Línea de tiempo: historia textil en Chile</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>📅 Evolución:</strong> Muestra ciclos de integración vertical (auge textil), desintegración (apertura comercial) y nueva tendencia hacia economía circular.
+            </div>
+            <div class="timeline">
+                <div class="timeline-item"><span class="timeline-year">1900-1950</span><br>Auge textil: fábricas en Biobío. Alta integración vertical.</div>
+                <div class="timeline-item"><span class="timeline-year">1970s</span><br>Intervención estatal y declive.</div>
+                <div class="timeline-item"><span class="timeline-year">1990s</span><br>Apertura comercial: importaciones masivas. Desintegración.</div>
+                <div class="timeline-item"><span class="timeline-year">2010s</span><br>Cierre de fábricas, auge del retail con marcas propias.</div>
+                <div class="timeline-item"><span class="timeline-year">2020-2025</span><br>Economía circular, Ley REP y reciclaje textil.</div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 5: CADENA DE VALOR ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>5</span>
+                <h2>Cadena de valor textil: ¿dónde hay integración vertical?</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>🔗 6 eslabones:</strong> En Chile, integración débil en fibra/hilado/tejido (se importa). Fuerte en retail (marcas propias). Creciente en reciclaje.
+            </div>
+            <div class="cadena-valor">
+                <div class="eslabon">🌾 Fibra<br><small>Algodón</small></div>
+                <div class="eslabon">🧵 Hilado<br><small>Hilos</small></div>
+                <div class="eslabon">📏 Tejido<br><small>Tela cruda</small></div>
+                <div class="eslabon">🎨 Acabado<br><small>Teñido</small></div>
+                <div class="eslabon">✂️ Confección<br><small>Corte</small></div>
+                <div class="eslabon">🏬 Retail<br><small>Tiendas</small></div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 6: INDICADORES ECONÓMICOS ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>6</span>
+                <h2>Indicadores económicos del textil chileno (2025)</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Indicador</th><th>Valor</th></tr></thead>
+                    <tbody>
+                        <tr><td>Tamaño del mercado textil</td><td>USD 5.625 millones</td></tr>
+                        <tr><td>Crecimiento anual proyectado</td><td>4,31% (2025-2035)</td></tr>
+                        <tr><td>Consumo per cápita</td><td>~50 prendas/año</td></tr>
+                        <tr><td>Importación de ropa</td><td>~80% del consumo</td></tr>
+                        <tr><td>Empresas textiles formales</td><td>~2.500 (mayoría pymes)</td></tr>
+                        <tr><td>Empleo directo</td><td>~35.000 personas</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 7: COMPARACIÓN INTERNACIONAL ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>7</span>
+                <h2>Comparación internacional: grado de integración vertical</h2>
+            </div>
+            <div class="card-grid">
+                <div class="card"><div class="card-icon">🇨🇱</div><h3>Chile</h3><p>Baja integración en producción, alta en retail. Dependencia importaciones (80%).</p></div>
+                <div class="card"><div class="card-icon">🇵🇪</div><h3>Perú</h3><p>Integración media-alta: desde algodón hasta confección (Gamarra).</p></div>
+                <div class="card"><div class="card-icon">🇨🇳</div><h3>China</h3><p>Integración extrema (fibra → tienda). Economías de escala enormes.</p></div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 8: GRÁFICO INTERACTIVO I* ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>8</span>
+                <h2>Límite vertical óptimo (I*) – Simulación interactiva</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>📉 ¿Cómo funciona?</strong> Mueve el slider para cambiar la integración vertical (0% a 100%). El gráfico muestra: <span style="color:#27ae60;">● Costos de transacción</span> (bajan), <span style="color:#e74c3c;">● Costos de coordinación</span> (suben) y <span style="color:#1c6e8f;">● Costo total</span>. El punto I* es el óptimo.
+            </div>
+            <div class="grafico-wrapper">
+                <div class="chart-container">
+                    <canvas id="graficoIstar" width="800" height="350" style="max-width:100%; height:auto;"></canvas>
+                </div>
+                <div class="slider-container">
+                    <label style="font-weight:700;">🎚️ Nivel de integración vertical actual: <strong><span id="nivelValor">65</span>%</strong></label>
+                    <input type="range" id="sliderIntegracion" min="0" max="100" value="65" step="1">
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
+                        <span>0% (solo mercado)</span>
+                        <span>⚡ I* Óptimo</span>
+                        <span>100% (integración total)</span>
+                    </div>
+                </div>
+                <div class="info-panel">
+                    <div class="info-card">📉 Costos de transacción <span class="info-valor" id="ctValor">--</span></div>
+                    <div class="info-card">📈 Costos de coordinación <span class="info-valor" id="ccValor">--</span></div>
+                    <div class="info-card">💰 Costo total <span class="info-valor" id="totalValor">--</span></div>
+                    <div class="info-card" style="grid-column: span 3;">💡 <strong>Recomendación:</strong> <span id="recomendacionTexto">Mueve el slider</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 9: QUIZ ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>9</span>
+                <h2>Quiz: ¿Cuánto aprendiste?</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>📝 Instrucciones:</strong> Haz clic en la opción que consideres correcta. Recibirás feedback inmediato.
+            </div>
+            <div id="quiz">
+                <div class="quiz-pregunta" data-correcto="c">
+                    <p><strong>1.</strong> ¿Quién propuso que la empresa existe para ahorrar costos de transacción?</p>
+                    <div class="quiz-opcion" data-opcion="a">a) Williamson</div>
+                    <div class="quiz-opcion" data-opcion="b">b) Jensen</div>
+                    <div class="quiz-opcion" data-opcion="c">c) Coase</div>
+                    <div class="quiz-feedback"></div>
+                </div>
+                <div class="quiz-pregunta" data-correcto="b">
+                    <p><strong>2.</strong> ¿Qué concepto describe cuando un proveedor sube precios aprovechando una inversión específica?</p>
+                    <div class="quiz-opcion" data-opcion="a">a) Integración vertical</div>
+                    <div class="quiz-opcion" data-opcion="b">b) Hold-up</div>
+                    <div class="quiz-opcion" data-opcion="c">c) Spin-off</div>
+                    <div class="quiz-feedback"></div>
+                </div>
+                <div class="quiz-pregunta" data-correcto="a">
+                    <p><strong>3.</strong> En el gráfico I*, ¿qué sucede cuando la integración es muy alta (cerca de 100%)?</p>
+                    <div class="quiz-opcion" data-opcion="a">a) Suben los costos de coordinación</div>
+                    <div class="quiz-opcion" data-opcion="b">b) Suben los costos de transacción</div>
+                    <div class="quiz-opcion" data-opcion="c">c) No hay costos</div>
+                    <div class="quiz-feedback"></div>
+                </div>
+                <div class="quiz-pregunta" data-correcto="c">
+                    <p><strong>4.</strong> ¿Qué zona de Santiago es un clúster de comercio textil?</p>
+                    <div class="quiz-opcion" data-opcion="a">a) Estación Central</div>
+                    <div class="quiz-opcion" data-opcion="b">b) El Cortijo</div>
+                    <div class="quiz-opcion" data-opcion="c">c) Barrio Patronato</div>
+                    <div class="quiz-feedback"></div>
+                </div>
+                <div class="quiz-pregunta" data-correcto="b">
+                    <p><strong>5.</strong> ¿Qué ley chilena impulsa el reciclaje textil?</p>
+                    <div class="quiz-opcion" data-opcion="a">a) Ley de Etiquetado</div>
+                    <div class="quiz-opcion" data-opcion="b">b) Ley REP</div>
+                    <div class="quiz-opcion" data-opcion="c">c) Ley de Fomento Textil</div>
+                    <div class="quiz-feedback"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 10: CASO REAL ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>10</span>
+                <h2>Caso real: Procitex y economía circular (2025)</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>♻️ ¿Por qué es relevante?</strong> Procitex: primera planta de reciclaje textil a gran escala en Chile (500 toneladas/mes). Ejemplo de <strong>integración vertical hacia adelante</strong> impulsada por Ley REP.
+            </div>
+            <div class="card-grid">
+                <div class="card"><div class="card-icon">🏭🇨🇱</div><h3>Procitex</h3><p>500 toneladas/mes de reciclaje textil. Integración vertical en gestión de residuos.</p></div>
+                <div class="card"><div class="card-icon">📜</div><h3>Ley REP (2025)</h3><p>Textiles como producto prioritario. Incentiva alianzas verticales.</p></div>
+                <div class="card"><div class="card-icon">🌍</div><h3>Impacto ambiental</h3><p>Chile importa 42 kg textiles/habitante/año. Reduce residuos en Atacama.</p></div>
+            </div>
+        </div>
+        
+        <!-- ================= SECCIÓN 11: ESTUDIO DE INDUSTRIA REAL ================= -->
+        <div class="section">
+            <div class="section-title">
+                <span>11</span>
+                <h2>Estudio de industria real: Textil chileno</h2>
+            </div>
+            <div class="section-contexto">
+                <strong>🏭 ¿Qué analizamos?</strong> Aplicación del marco teórico de Coase y Williamson a la <strong>industria textil en Chile</strong>. Se define el grado de integración vertical, las gobernanzas predominantes y los activos específicos.
+            </div>
+
+            <!-- 11.1 Identificación -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-icon">📋</div>
+                <h3>11.1 Identificación de la industria</h3>
+                <p><strong>Sector:</strong> Textil, confección y retail de vestuario en Chile.</p>
+                <p><strong>Tamaño:</strong> USD 5.625 millones (2025).</p>
+                <p><strong>Empresas:</strong> Falabella, Ripley, Cencosud, Patio, Procitex.</p>
+                <p><strong>Estructura:</strong> Fragmentada en producción, concentrada en retail. 80% importación.</p>
+            </div>
+
+            <!-- 11.2 Grado de integración vertical -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-icon">📊</div>
+                <h3>11.2 Grado de integración vertical (medido)</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Eslabón</th><th>Control interno (%)</th><th>Grado</th></tr></thead>
+                        <tbody>
+                            <tr><td>Fibra</td><td>0%</td><td>Desintegrado</td></tr>
+                            <tr><td>Hilado</td><td>5%</td><td>Muy bajo</td></tr>
+                            <tr><td>Tejido</td><td>10%</td><td>Bajo</td></tr>
+                            <tr><td>Acabado</td><td>25%</td><td>Medio-bajo</td></tr>
+                            <tr><td>Confección</td><td>30%</td><td>Medio</td></tr>
+                            <tr><td>Logística</td><td>60%</td><td>Medio-alto</td></tr>
+                            <tr><td>Retail</td><td>85%</td><td>Alto</td></tr>
+                            <tr><td>Reciclaje</td><td>40%</td><td>Medio (creciente)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>📌 Grado de integración vertical promedio ponderado: ≈ 35-40%</strong></p>
+            </div>
+
+            <!-- 11.3 Gobernanzas -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-icon">⚙️</div>
+                <h3>11.3 Determinación de gobernanzas (Williamson, 1985)</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Transacción</th><th>Especificidad</th><th>Gobernanza</th></tr></thead>
+                        <tbody>
+                            <tr><td>Importación tela genérica</td><td>Baja</td><td>🔵 Mercado</td></tr>
+                            <tr><td>Importación tela exclusiva</td><td>Alta</td><td>🟡 Híbrido / Jerarquía</td></tr>
+                            <tr><td>Confección taller externo</td><td>Media</td><td>🟡 Híbrido</td></tr>
+                            <tr><td>Distribución y logística</td><td>Media</td><td>🟡 Híbrido / Jerarquía</td></tr>
+                            <tr><td>Retail y marcas propias</td><td>Alta</td><td>🔴 Jerarquía</td></tr>
+                            <tr><td>Reciclaje textil</td><td>Media-alta</td><td>🟡 Híbrido / Jerarquía</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 11.4 Activos específicos -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-icon">🔒</div>
+                <h3>11.4 Activos específicos identificados</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li><strong>Física:</strong> Maquinaria para colecciones exclusivas.</li>
+                    <li><strong>Ubicación:</strong> Centros logísticos en zonas de alto consumo.</li>
+                    <li><strong>Humana:</strong> Conocimiento en diseños de moda local.</li>
+                    <li><strong>Marca:</strong> Marcas propias de retailers.</li>
+                    <li><strong>Regulatoria:</strong> Inversiones en reciclaje por Ley REP.</li>
+                </ul>
+            </div>
+
+            <!-- 11.5 I* por tipo de producto -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-icon">🎯</div>
+                <h3>11.5 Determinación del límite vertical óptimo (I*)</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>Tipo de producto</th><th>I* recomendado</th><th>Estrategia</th></tr></thead>
+                        <tbody>
+                            <tr><td>Productos básicos (poleras blancas)</td><td>20-30%</td><td>Comprar en mercado</td></tr>
+                            <tr><td>Moda rápida (tendencias)</td><td>50-65%</td><td>Integración parcial</td></tr>
+                            <tr><td>Alta moda / colecciones exclusivas</td><td>70-85%</td><td>Integración fuerte</td></tr>
+                            <tr><td>Reciclaje textil (circular)</td><td>60-75%</td><td>Alianzas híbridas</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 11.6 Conclusiones -->
+            <div class="card">
+                <div class="card-icon">📝</div>
+                <h3>11.6 Conclusiones del estudio</h3>
+                <ul style="margin-left: 1.5rem;">
+                    <li>🔵 <strong>Mercado</strong> en eslabones productivos (fibra a tejido).</li>
+                    <li>🔴 <strong>Jerarquía</strong> en retail (marcas propias).</li>
+                    <li>🟡 <strong>Híbridos</strong> en confección y reciclaje.</li>
+                    <li>⚠️ Riesgo de <strong>hold-up</strong> en colecciones exclusivas.</li>
+                    <li>📈 Tendencia hacia integración en <strong>economía circular</strong> por Ley REP.</li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- FOOTER -->
+    <footer>
+        <p>📚 <strong>Referencias:</strong> Coase (1939) | Williamson (1985) | Klein, Crawford & Alchian (1978) | Jensen & Meckling (1976)</p>
+        <p>📌 <strong>Fuentes:</strong> Expert Market Research (2025), Cámara de Comercio de Santiago, Aduanas de Chile</p>
+        <p>🧵 Estudio de industria real - Textil chileno | Análisis de integración vertical y gobernanzas</p>
+    </footer>
+</div>
+
+<script>
+    // ================= MAPA INTERACTIVO =================
+    const map = L.map('map').setView([-33.4489, -70.6693], 7.5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const zonasTextiles = [
+        { nombre: "🏭 Barrio Patronato", coords: [-33.4312, -70.6480], info: "<b>Cluster de Comercio:</b> Alta competencia, bajos costos de transacción. Integración vertical baja." },
+        { nombre: "📦 Estación Central", coords: [-33.4500, -70.6850], info: "<b>Centro Logístico:</b> Distribución masiva de importaciones. Integración vertical media." },
+        { nombre: "🏭 Región del Biobío", coords: [-36.8201, -73.0444], info: "<b>Hub Histórico:</b> Antiguas fábricas de alta integración vertical (Bellavista Tomé)." },
+        { nombre: "🚚 Sector El Cortijo", coords: [-33.3780, -70.6900], info: "<b>Centros de Distribución:</b> Bodegaje para e-commerce. Integración vertical media." },
+        { nombre: "🏭 Zona Franca Iquique", coords: [-20.2200, -70.1500], info: "<b>Principal puerta de importaciones.</b> Integración vertical muy baja." },
+        { nombre: "🏭 Parque Industrial Quilicura", coords: [-33.3600, -70.7300], info: "<b>Zona fabril moderna:</b> Talleres de confección. Integración vertical media." }
+    ];
+
+    zonasTextiles.forEach(zona => {
+        L.marker(zona.coords).addTo(map).bindPopup(`<div><h3>${zona.nombre}</h3><p>${zona.info}</p></div>`);
+    });
+    L.control.scale({ metric: true, imperial: false }).addTo(map);
+
+    // ================= GRÁFICO DE BARRAS =================
+    new Chart(document.getElementById('graficoBarras'), {
+        type: 'bar',
+        data: {
+            labels: ['2015', '2020', '2025'],
+            datasets: [
+                { label: 'Importaciones (millones USD)', data: [5200, 6500, 7850], backgroundColor: '#e74c3c', borderRadius: 6 },
+                { label: 'Producción local (millones USD)', data: [850, 920, 1050], backgroundColor: '#27ae60', borderRadius: 6 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'top' } } }
+    });
+
+    // ================= GRÁFICO I* =================
+    const niveles = Array.from({length: 101}, (_, i) => i);
+    const transaccion = niveles.map(i => Math.max(0, 100 * Math.exp(-i / 25)));
+    const coordinacion = niveles.map(i => Math.min(100, 20 * Math.exp(i / 35)));
+    const total = niveles.map((_, i) => transaccion[i] + coordinacion[i]);
+    let iOptimo = total.indexOf(Math.min(...total));
+    
+    new Chart(document.getElementById('graficoIstar'), {
+        type: 'line',
+        data: {
+            labels: niveles,
+            datasets: [
+                { label: 'Costos de transacción', data: transaccion, borderColor: '#27ae60', borderWidth: 2.5, fill: false, tension: 0.4, pointRadius: 0 },
+                { label: 'Costos de coordinación', data: coordinacion, borderColor: '#e74c3c', borderWidth: 2.5, fill: false, tension: 0.4, pointRadius: 0 },
+                { label: 'Costo total', data: total, borderColor: '#1c6e8f', borderWidth: 3.5, fill: false, tension: 0.4, pointRadius: 0 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.raw.toFixed(1)}` } }, legend: { position: 'top' } } }
+    });
+    
+    const slider = document.getElementById('sliderIntegracion');
+    const actualizarPanel = () => {
+        let val = parseInt(slider.value);
+        document.getElementById('nivelValor').innerText = val;
+        document.getElementById('ctValor').innerText = transaccion[val].toFixed(1);
+        document.getElementById('ccValor').innerText = coordinacion[val].toFixed(1);
+        document.getElementById('totalValor').innerText = total[val].toFixed(1);
+        let rec = document.getElementById('recomendacionTexto');
+        let dist = Math.abs(val - iOptimo);
+        if (dist < 10) rec.innerText = '✅ Nivel casi óptimo. Costos minimizados.';
+        else if (val < iOptimo) rec.innerText = '⚠️ Por debajo del I*. Integra más para reducir costos de transacción.';
+        else rec.innerText = '⚠️ Por encima del I*. Desintegra para reducir burocracia.';
+    };
+    if(slider) {
+        slider.addEventListener('input', actualizarPanel);
+        actualizarPanel();
+    }
+    
+    // ================= QUIZ =================
+    document.querySelectorAll('.quiz-opcion').forEach(op => {
+        op.addEventListener('click', function() {
+            let pregunta = this.closest('.quiz-pregunta');
+            let correcta = pregunta.dataset.correcto;
+            let feedback = pregunta.querySelector('.quiz-feedback');
+            if (this.dataset.opcion === correcta) {
+                feedback.innerHTML = '✅ ¡Correcto!';
+                this.classList.add('correcto');
+            } else {
+                feedback.innerHTML = `❌ Incorrecto. La respuesta correcta era ${correcta.toUpperCase()}.`;
+                this.classList.add('incorrecto');
+            }
+            pregunta.querySelectorAll('.quiz-opcion').forEach(opt => opt.style.pointerEvents = 'none');
+        });
+    });
+</script>
+</body>
+</html>
